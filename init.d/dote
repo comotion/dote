@@ -20,8 +20,6 @@ cfgdir="/etc/dote/rules.d"
 
 PATH=/bin:/usr/bin:/sbin
 # IFS with <space,tab,enter>
-IFS='
-'
 
 load_dote() {
 	test -d $cfgdir || exit 1
@@ -49,6 +47,12 @@ stop_dote() {
 	. $cfgdir/99stop.cfg
 }
 
+clear_dote () {
+	test -d $cfgdir || exit 1
+        . $cfgdir/00paths.cfg
+        . $cfgdir/19accept.cfg
+}
+
 case "${1:-''}" in
   'start')
    log_action_msg "Starting firewalling..."
@@ -58,6 +62,11 @@ case "${1:-''}" in
    ;;
 
   'stop')
+   log_action_msg "firewall stays up"
+   log_end_msg 0
+   exit 0
+   ;;
+  'force-stop')
    log_action_msg  "Stopping firewalling..."
    log_warning_msg "This will do a DROP on all traffic!"
    log_warning_msg "Hit Ctrl-C NOW to rethink your life.."
@@ -66,13 +75,24 @@ case "${1:-''}" in
    log_end_msg 0
    exit 0
    ;;
-  
   'reload')
    log_daemon_msg "Reloading firewall..."
    load_dote
    log_end_msg 0
    exit 0
    ;;
+
+  'restart')
+   $0 reload
+   ;;
+
+   clear)
+   log_daemon_msg "Clearing firewall (you are now wide open)"
+   clear_dote
+   log_end_msg 0
+   exit 0
+   ;;
+
   
   'status')
    echo ""
